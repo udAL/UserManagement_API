@@ -1,0 +1,6 @@
+App\Entity\Group:
+  attributes:
+    id:
+      groups: ['group_list', 'group_details']
+    users:
+      groups: ['group_details']

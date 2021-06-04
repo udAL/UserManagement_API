@@ -1,0 +1,10 @@
+App\Entity\User:
+  properties:
+    name:
+      - NotBlank: ~
+      - Length:
+          min: 3
+          max: 255
+          minMessage: 'Name must be at least {{ limit }} characters long'
+          maxMessage: 'Name cannot be longer than {{ limit }} characters'
+          allowEmptyString: false

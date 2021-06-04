@@ -1,0 +1,8 @@
+App\Entity\User:
+  attributes:
+    id:
+      groups: ['user_list', 'user_details']
+    name:
+      groups: ['user_list', 'user_details']
+    roles:
+      groups: ['user_details']

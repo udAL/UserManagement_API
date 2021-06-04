@@ -11,6 +11,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class User implements UserInterface
 {
+    public const AVAILABLE_ROLES = ['ROLE_USER', 'ROLE_ADMIN'];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -118,5 +120,25 @@ class User implements UserInterface
         $this->api_token = $api_token;
 
         return $this;
+    }
+
+    /**
+     * @ORM\PreFlush()
+     */
+    public function preFlush(): void
+    {
+        if( empty($this->roles) ) {
+            // Guarantee every user at least has one role
+            $this->roles[] = 'ROLE_USER';
+        }
+        else {
+            // Only allow available_roles
+            foreach($this->roles as $i => $role)
+            {
+                if(!in_array($role, self::AVAILABLE_ROLES)) {
+                    unset($this->roles[$i]);
+                }
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Group;
+use App\Entity\User;
 use App\Repository\GroupRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -83,7 +84,7 @@ class GroupController extends AbstractFOSRestController
      */
     public function addUserGroup($id, Request $request) : Group
     {
-        return $this->modifyUserGroup($id, $request->request->get('users'), true);
+        return $this->modifyUserGroup($id, $request->request->get('users'), 'addUser');
     }
 
     /**
@@ -93,10 +94,10 @@ class GroupController extends AbstractFOSRestController
      */
     public function removeUserGroup($id, Request $request) : Group
     {
-        return $this->modifyUserGroup($id, $request->request->get('users'), false);
+        return $this->modifyUserGroup($id, $request->request->get('users'), 'removeUser');
     }
 
-    private function modifyUserGroup($id, $id_users, $add) : Group
+    private function modifyUserGroup($id, $id_users, $callback) : Group
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Not Allowed');
         if($id_users) {
@@ -104,18 +105,8 @@ class GroupController extends AbstractFOSRestController
             if($group) {
                 if(!is_array($id_users)) $id_users = array($id_users);
                 foreach($id_users as $id_user) {
-                    $user = $this->user_repository->find($id_user);
-                    if($user) {
-                        if($add) {
-                            $group->addUser($user);
-                        }
-                        else {
-                            $group->removeUser($user);
-                        }
-                    }
-                    else {
-                        throw new BadRequestHttpException('Bad Request');
-                    }
+                    $user = $this->getUserById($id_user);
+                    $group->$callback($user);
                 }
                 $this->em->persist($group);
                 $this->em->flush();
@@ -124,6 +115,17 @@ class GroupController extends AbstractFOSRestController
             else {
                 throw new BadRequestHttpException('Bad Request');
             }
+        }
+        else {
+            throw new BadRequestHttpException('Bad Request');
+        }
+    }
+
+    private function getUserById($id_user) : User
+    {
+        $user = $this->user_repository->find($id_user);
+        if($user) {
+            return $user;
         }
         else {
             throw new BadRequestHttpException('Bad Request');
